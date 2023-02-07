@@ -24,10 +24,13 @@ provider:
     USERS_TABLE: ${self:custom.tableName}
 
 functions:
-  api:
-    handler: index.handler
+  create:
+    handler: handlers/todoHandler.createTodo
     events:
-      - httpApi: '*'
+      - http: 
+          path: todos
+          method: post
+          cors: true
 
 resources:
   Resources:
