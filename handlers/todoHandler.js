@@ -47,13 +47,13 @@ const createTodo = async (event) => {
 
     console.log(event.body);
 
-    
+
 
     try {
 
         var request = JSON.parse(event.body);
-        request = { todoId : "sdfsdfsdfsdf", ...request };
-        
+        request = { todoId: "sdfsdfsdfsdf", ...request };
+
         const response = await ddbDocClient.send(new PutCommand({
             TableName: TODO_TABLE,
             Item: marshall(request || {}),
@@ -99,4 +99,88 @@ const listTodo = async (event) => {
 
 }
 
-module.exports = { createTodo, listTodo }
+const getTodo = async (event) => {
+
+    try {
+
+        const response = await ddbDocClient.send(new GetCommand,
+            ({ TableName: TODO_TABLE, Key: marshall({ postId: event.pathParameters.postId }) }));
+
+
+        console.log(response);
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ response })
+        }
+
+    } catch (error) {
+        console.log("what error: ", error)
+        return {
+            statusCode: 500,
+            body: JSON.stringify(error)
+        }
+    }
+
+
+
+}
+
+const deleteTodo = async (event) => {
+
+    console.log(event.body);
+
+
+
+    try {
+
+        const response = await ddbDocClient.send(new PutCommand({
+            TableName: TODO_TABLE,
+            Key: marshall({ todoId: event.pathParameters.todoId }),
+        }));
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ message: "Successfully deleted", response })
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ message: error.message, event: event })
+        }
+    }
+
+
+}
+
+const updateTodo = async (event) => {
+
+    console.log(event.body);
+
+
+
+    try {
+
+        var request = JSON.parse(event.body);
+        request = { todoId: "sdfsdfsdfsdf", ...request };
+
+        const response = await ddbDocClient.send(new PutCommand({
+            TableName: TODO_TABLE,
+            Key: marshall({ todoId: event.pathParameters.todoId }),
+        }));
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ message: "Successfully Updated", response })
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ message: error.message, event: event, request: request })
+        }
+    }
+
+
+}
+
+module.exports = { createTodo, listTodo, deleteTodo,updateTodo,getTodo }

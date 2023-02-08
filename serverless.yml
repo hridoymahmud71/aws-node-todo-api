@@ -28,7 +28,7 @@ functions:
     handler: handlers/todoHandler.createTodo
     events:
       - http: 
-          path: todos
+          path: todo
           method: post
           cors: true
   list:
@@ -37,6 +37,27 @@ functions:
       - http: 
           path: todos
           method: get
+          cors: true
+  get:
+    handler: handlers/todoHandler.getTodo
+    events:
+      - http: 
+          path: todo/{todoId}
+          method: get
+          cors: true
+  update:
+    handler: handlers/todoHandler.updateTodo
+    events:
+      - http: 
+          path: todo/{todoId}
+          method: put
+          cors: true
+  delete:
+    handler: handlers/todoHandler.deleteTodo
+    events:
+      - http: 
+          path: todo/{todoId}
+          method: delete
           cors: true
 
 resources:
