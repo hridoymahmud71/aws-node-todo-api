@@ -3,17 +3,13 @@ const { v4 } = require('uuid');
 
 const {
     DynamoDBClient,
+    ScanCommand,
     GetItemCommand,
     PutItemCommand,
     DeleteItemCommand,
     UpdateItemCommand
 } = require("@aws-sdk/client-dynamodb");
-const {
-    DynamoDBDocumentClient,
-    GetCommand,
-    PutCommand,
-    ScanCommand
-} = require("@aws-sdk/lib-dynamodb");
+
 const { marshall, unmarshall } = require('@aws-sdk/util-dynamodb');
 
 
@@ -36,9 +32,7 @@ const translateConfig = { marshallOptions, unmarshallOptions };
 
 
 const TODO_TABLE = process.env.TODO_TABLE;
-const client = new DynamoDBClient({});
-const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
-
+const db = new DynamoDBClient({});
 
 
 
@@ -54,7 +48,7 @@ const createTodo = async (event) => {
         var request = JSON.parse(event.body);
         request = { todoId: "sdfsdfsdfsdf", ...request };
 
-        const response = await ddbDocClient.send(new PutCommand({
+        const response = await db.send(new PutItemCommand({
             TableName: TODO_TABLE,
             Item: marshall(request || {}),
         }));
@@ -77,7 +71,7 @@ const listTodo = async (event) => {
 
     try {
 
-        const response = await ddbDocClient.send(new ScanCommand({ TableName: TODO_TABLE }));
+        const response = await db.send(new ScanCommand({ TableName: TODO_TABLE }));
 
 
         console.log(response);
@@ -103,8 +97,8 @@ const getTodo = async (event) => {
 
     try {
 
-        const response = await ddbDocClient.send(new GetCommand,
-            ({ TableName: TODO_TABLE, Key: marshall({ postId: event.pathParameters.postId }) }));
+        const response = await db.send(new GetItemCommand,
+            ({ TableName: TODO_TABLE, Key: { todoId: event.pathParameters.todoId } }));
 
 
         console.log(response);
@@ -134,7 +128,7 @@ const deleteTodo = async (event) => {
 
     try {
 
-        const response = await ddbDocClient.send(new PutCommand({
+        const response = await db.send(new DeleteCommand({
             TableName: TODO_TABLE,
             Key: marshall({ todoId: event.pathParameters.todoId }),
         }));
@@ -164,7 +158,7 @@ const updateTodo = async (event) => {
         var request = JSON.parse(event.body);
         request = { todoId: "sdfsdfsdfsdf", ...request };
 
-        const response = await ddbDocClient.send(new PutCommand({
+        const response = await db.send(new PutCommand({
             TableName: TODO_TABLE,
             Key: marshall({ todoId: event.pathParameters.todoId }),
         }));
