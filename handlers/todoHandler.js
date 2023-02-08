@@ -1,11 +1,20 @@
 // external imports
-const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { v4 } = require('uuid');
+
+const {
+    DynamoDBClient,
+    GetItemCommand,
+    PutItemCommand,
+    DeleteItemCommand,
+    UpdateItemCommand
+} = require("@aws-sdk/client-dynamodb");
 const {
     DynamoDBDocumentClient,
     GetCommand,
     PutCommand,
     ScanCommand
 } = require("@aws-sdk/lib-dynamodb");
+const { marshall, unmarshall } = require('@aws-sdk/util-dynamodb');
 
 
 const marshallOptions = {
@@ -34,16 +43,37 @@ const ddbDocClient = DynamoDBDocumentClient.from(client, translateConfig);
 
 
 
-const createTodo = async (event, context) => {
+const createTodo = async (event) => {
 
-    return {
-        statusCode: 200,
-        body: JSON.stringify({ message: "Hello world" })
+    console.log(event.body);
+
+    
+
+    try {
+
+        var request = JSON.parse(event.body);
+        request = { todoId : "sdfsdfsdfsdf", ...request };
+        
+        const response = await ddbDocClient.send(new PutCommand({
+            TableName: TODO_TABLE,
+            Item: marshall(request || {}),
+        }));
+
+        return {
+            statusCode: 200,
+            body: JSON.stringify({ message: "Successfully Created", response })
+        }
+    } catch (error) {
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ message: error.message, event: event, request: request })
+        }
     }
+
 
 }
 
-const listTodo = async (event, context, callback) => {
+const listTodo = async (event) => {
 
     try {
 
@@ -58,7 +88,7 @@ const listTodo = async (event, context, callback) => {
         }
 
     } catch (error) {
-        console.log("what error: ",error)
+        console.log("what error: ", error)
         return {
             statusCode: 500,
             body: JSON.stringify(error)
